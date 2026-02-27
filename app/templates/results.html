@@ -1,0 +1,435 @@
+{% extends "base.html" %}
+{% block title %}Résultats du diagnostic — MédiSym{% endblock %}
+{% block extra_styles %}
+<style>
+    .results-page {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 2.5rem 1.5rem 5rem;
+    }
+
+    .results-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .results-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(16,185,129,0.1);
+        border: 1px solid rgba(16,185,129,0.25);
+        color: #6ee7b7;
+        padding: 0.3rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 1rem;
+    }
+
+    .results-header h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.4rem;
+        font-weight: 700;
+        color: var(--white);
+        margin-bottom: 0.6rem;
+    }
+
+    .symptoms-recap {
+        display: inline-flex;
+        align-items: flex-start;
+        gap: 0.6rem;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 0.85rem 1.4rem;
+        font-size: 0.92rem;
+        color: var(--muted);
+        font-style: italic;
+        max-width: 700px;
+        line-height: 1.5;
+        text-align: left;
+    }
+
+    .algo-strip {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+        padding: 0.9rem 1.4rem;
+        background: rgba(255,255,255,0.02);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        font-size: 0.82rem;
+        color: var(--muted);
+    }
+
+    .algo-item { display: flex; align-items: center; gap: 0.4rem; }
+    .algo-item strong { color: var(--white); }
+
+    /* ── Diagnostic cards ──────────────────────────────────── */
+    .diag-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        overflow: hidden;
+        margin-bottom: 1.4rem;
+        transition: box-shadow 0.2s;
+    }
+    .diag-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.25); }
+    .diag-card.top-result { border-top: 3px solid var(--accent); }
+
+    .diag-header {
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        padding: 1.5rem 1.8rem;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .diag-header:hover { background: rgba(255,255,255,0.02); }
+
+    .rank-badge {
+        width: 40px; height: 40px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 1rem; flex-shrink: 0;
+    }
+    .rank-1 { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; }
+    .rank-2 { background: rgba(148,163,184,0.2); color: var(--white); }
+    .rank-3 { background: rgba(148,163,184,0.1); color: var(--muted); }
+
+    .diag-title-block { flex: 1; min-width: 0; }
+
+    .diag-name {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.55rem; font-weight: 700;
+        color: var(--white); margin-bottom: 0.25rem; line-height: 1.2;
+    }
+
+    .diag-description {
+        font-size: 0.87rem; color: var(--muted); line-height: 1.5;
+        display: -webkit-box; -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    .diag-meta-row {
+        display: flex; align-items: center; gap: 0.5rem;
+        margin-top: 0.5rem; flex-wrap: wrap;
+    }
+
+    .sev-badge {
+        display: inline-flex; align-items: center; gap: 0.3rem;
+        padding: 0.2rem 0.7rem; border-radius: 20px;
+        font-size: 0.73rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .sev-urgence  { background:rgba(220,38,38,0.15); color:#fca5a5; border:1px solid rgba(220,38,38,0.3); }
+    .sev-grave    { background:rgba(239,68,68,0.12); color:#fca5a5; border:1px solid rgba(239,68,68,0.25); }
+    .sev-modérée  { background:rgba(245,158,11,0.12); color:#fcd34d; border:1px solid rgba(245,158,11,0.25); }
+    .sev-chronique { background:rgba(139,92,246,0.12); color:#c4b5fd; border:1px solid rgba(139,92,246,0.25); }
+    .sev-légère   { background:rgba(16,185,129,0.1); color:#6ee7b7; border:1px solid rgba(16,185,129,0.2); }
+
+    .kw-chip {
+        background: rgba(59,130,246,0.08);
+        border: 1px solid rgba(59,130,246,0.18);
+        color: #93c5fd;
+        padding: 0.15rem 0.55rem;
+        border-radius: 6px;
+        font-size: 0.72rem; font-weight: 500;
+    }
+
+    .top-badge {
+        display: inline-flex; align-items: center; gap: 0.3rem;
+        background: rgba(245,158,11,0.1);
+        border: 1px solid rgba(245,158,11,0.25);
+        color: #fcd34d;
+        padding: 0.18rem 0.6rem; border-radius: 20px;
+        font-size: 0.72rem; font-weight: 700;
+    }
+
+    .confidence-ring { position: relative; width: 72px; height: 72px; flex-shrink: 0; }
+    .confidence-ring svg { transform: rotate(-90deg); }
+    .confidence-ring circle { fill: none; stroke-width: 5; }
+    .cr-bg { stroke: rgba(255,255,255,0.06); }
+    .cr-fill { stroke-linecap: round; }
+    .cr-label {
+        position: absolute; inset: 0;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        font-weight: 800; font-size: 0.92rem;
+        color: var(--white); line-height: 1;
+    }
+    .cr-label small { font-size: 0.55rem; color: var(--muted); font-weight: 500; margin-top: 1px; }
+
+    .toggle-icon { color: var(--muted); font-size: 0.7rem; transition: transform 0.3s; flex-shrink: 0; }
+    .toggle-icon.open { transform: rotate(180deg); }
+
+    /* Body */
+    .diag-body { display: none; border-top: 1px solid var(--border); padding: 1.6rem 1.8rem; }
+    .diag-body.open { display: block; }
+
+    .urgency-alert {
+        display: flex; align-items: flex-start; gap: 1rem;
+        padding: 1.1rem 1.4rem; border-radius: 14px; margin-bottom: 1.2rem;
+    }
+    .ua-urgence  { background:rgba(220,38,38,0.1); border:1.5px solid rgba(220,38,38,0.35); }
+    .ua-grave    { background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.25); }
+    .ua-modérée  { background:rgba(245,158,11,0.07); border:1px solid rgba(245,158,11,0.2); }
+    .ua-chronique { background:rgba(139,92,246,0.07); border:1px solid rgba(139,92,246,0.2); }
+    .ua-légère   { background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.18); }
+
+    .ua-title { font-weight: 700; font-size: 0.88rem; margin-bottom: 0.2rem; }
+    .ua-text  { font-size: 0.85rem; opacity: 0.8; line-height: 1.4; }
+    .ua-urgence .ua-title, .ua-grave .ua-title { color: #fca5a5; }
+    .ua-modérée .ua-title { color: #fcd34d; }
+    .ua-chronique .ua-title { color: #c4b5fd; }
+    .ua-légère .ua-title  { color: #6ee7b7; }
+    .ua-urgence .ua-text, .ua-grave .ua-text { color: #fca5a5; }
+    .ua-modérée .ua-text  { color: #fcd34d; }
+    .ua-chronique .ua-text { color: #c4b5fd; }
+    .ua-légère .ua-text   { color: #6ee7b7; }
+
+    .sections-grid {
+        display: grid; grid-template-columns: 1fr 1fr;
+        gap: 1rem; margin-bottom: 1rem;
+    }
+
+    .info-section {
+        background: rgba(255,255,255,0.025);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 14px; padding: 1.1rem 1.2rem;
+    }
+    .info-section.full { grid-column: 1 / -1; }
+
+    .section-title {
+        font-size: 0.74rem; text-transform: uppercase;
+        letter-spacing: 0.07em; font-weight: 700;
+        margin-bottom: 0.7rem;
+        display: flex; align-items: center; gap: 0.4rem;
+    }
+
+    .section-list { list-style: none; padding: 0; margin: 0; }
+    .section-list li {
+        display: flex; align-items: flex-start; gap: 0.55rem;
+        padding: 0.35rem 0; font-size: 0.88rem; color: var(--muted);
+        border-bottom: 1px solid rgba(255,255,255,0.03); line-height: 1.4;
+    }
+    .section-list li:last-child { border-bottom: none; }
+
+    .li-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+
+    .detail-link {
+        display: inline-flex; align-items: center; gap: 0.4rem;
+        color: var(--accent2); font-size: 0.85rem; font-weight: 600;
+        text-decoration: none; margin-top: 0.8rem; transition: opacity 0.2s;
+    }
+    .detail-link:hover { opacity: 0.75; }
+
+    .disclaimer-box {
+        background: rgba(245,158,11,0.06);
+        border: 1px solid rgba(245,158,11,0.15);
+        border-radius: 14px; padding: 1rem 1.4rem;
+        font-size: 0.84rem; color: #fcd34d; opacity: 0.85;
+        display: flex; gap: 0.7rem; align-items: flex-start;
+        margin-top: 1.8rem; line-height: 1.5;
+    }
+
+    .actions-row {
+        display: flex; gap: 1rem; justify-content: center;
+        flex-wrap: wrap; margin-top: 2rem;
+    }
+
+    .no-results {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: 20px; padding: 3rem 2rem; text-align: center;
+    }
+
+    @media (max-width: 700px) {
+        .sections-grid { grid-template-columns: 1fr; }
+        .info-section.full { grid-column: 1; }
+        .diag-header { padding: 1.1rem 1.2rem; gap: 0.8rem; }
+        .diag-name { font-size: 1.25rem; }
+        .confidence-ring { width: 58px; height: 58px; }
+        .algo-strip { gap: 0.8rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="results-page">
+
+    <div class="results-header">
+        <div class="results-badge">
+            <span style="width:7px;height:7px;border-radius:50%;background:#34d399;"></span>
+            Analyse complète — Base médicale locale · 45 maladies
+        </div>
+        <h1>Résultats du diagnostic</h1>
+        <div class="symptoms-recap">
+            <span style="opacity:0.5; flex-shrink:0;">💬</span>
+            <span>{{ symptoms }}</span>
+        </div>
+    </div>
+
+    {% if results %}
+
+    <div class="algo-strip">
+        <div class="algo-item">🔬 <strong>{{ results|length }}</strong> correspondance(s) trouvée(s)</div>
+        <div class="algo-item">🏥 Base de <strong>45</strong> maladies africaines</div>
+        <div class="algo-item">📊 Algorithme multi-critères pondéré</div>
+        <div class="algo-item">⚡ Précision estimée <strong>80-90%</strong></div>
+    </div>
+
+    {% for result in results %}
+    {% set rank = loop.index %}
+    {% set sev = result.severity %}
+    {% set circ = 188.5 %}
+    {% set off = circ * (1 - result.confidence / 100) %}
+    {% if result.confidence >= 70 %}{% set rc = '#10b981' %}{% elif result.confidence >= 45 %}{% set rc = '#f59e0b' %}{% else %}{% set rc = '#94a3b8' %}{% endif %}
+
+    {% if sev == 'urgence' %}{% set ua_msg = 'Symptômes critiques détectés — Rendez-vous aux urgences ou appelez le SAMU immédiatement.' %}
+    {% elif sev == 'grave' %}{% set ua_msg = 'Maladie grave nécessitant une consultation médicale dans les 24-48 heures.' %}
+    {% elif sev == 'chronique' %}{% set ua_msg = 'Maladie chronique — un suivi médical régulier et un traitement de fond sont indispensables.' %}
+    {% elif sev == 'modérée' %}{% set ua_msg = 'Consultez un médecin si les symptômes persistent plus de 3 jours ou s\'aggravent.' %}
+    {% else %}{% set ua_msg = 'Généralement bénigne. Consultez si aucune amélioration après 5 jours.' %}
+    {% endif %}
+
+    <div class="diag-card {% if rank == 1 %}top-result{% endif %}">
+
+        <div class="diag-header" onclick="toggleCard({{ loop.index0 }})">
+            <div class="rank-badge rank-{{ rank }}">{{ rank }}</div>
+
+            <div class="diag-title-block">
+                <div class="diag-name">{{ result.name }}</div>
+                <div class="diag-description">{{ result.description }}</div>
+                <div class="diag-meta-row">
+                    <span class="sev-badge sev-{{ sev }}">
+                        {% if sev == 'urgence' %}🚨{% elif sev == 'grave' %}⚠️{% elif sev == 'modérée' %}🟡{% elif sev == 'chronique' %}🔵{% else %}🟢{% endif %}
+                        {{ sev | capitalize }}
+                    </span>
+                    {% if rank == 1 %}<span class="top-badge">⭐ Meilleure correspondance</span>{% endif %}
+                    {% for kw in result.matched_key_symptoms[:3] %}
+                        <span class="kw-chip">{{ kw }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="confidence-ring">
+                <svg viewBox="0 0 70 70" width="72" height="72">
+                    <circle class="cr-bg" cx="35" cy="35" r="30"/>
+                    <circle class="cr-fill" cx="35" cy="35" r="30"
+                        stroke="{{ rc }}"
+                        stroke-dasharray="{{ circ }}"
+                        stroke-dashoffset="{{ off }}"/>
+                </svg>
+                <div class="cr-label">{{ result.confidence }}%<small>préc.</small></div>
+            </div>
+
+            <div class="toggle-icon {% if rank == 1 %}open{% endif %}" id="toggle-{{ loop.index0 }}">▼</div>
+        </div>
+
+        <div class="diag-body {% if rank == 1 %}open{% endif %}" id="body-{{ loop.index0 }}">
+
+            <div class="urgency-alert ua-{{ sev }}">
+                <span style="font-size:1.6rem; flex-shrink:0;">
+                    {% if sev == 'urgence' %}🚨{% elif sev == 'grave' %}⚠️{% elif sev == 'chronique' %}⏱️{% elif sev == 'modérée' %}🩺{% else %}💊{% endif %}
+                </span>
+                <div>
+                    <div class="ua-title">Niveau de gravité : {{ sev | capitalize }}</div>
+                    <div class="ua-text">{{ ua_msg }}</div>
+                </div>
+            </div>
+
+            <div class="sections-grid">
+
+                <div class="info-section">
+                    <div class="section-title" style="color:var(--accent2);">🩺 Symptômes typiques</div>
+                    <ul class="section-list">
+                        {% for s in result.symptoms %}
+                        <li><span class="li-dot" style="background:var(--accent2);"></span>{{ s }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="info-section">
+                    <div class="section-title" style="color:#10b981;">💊 Traitement recommandé</div>
+                    <ul class="section-list">
+                        {% for t in result.treatment %}
+                        <li><span class="li-dot" style="background:#10b981;"></span>{{ t }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="info-section full">
+                    <div class="section-title" style="color:#8b5cf6;">🛡️ Prévention et conseils</div>
+                    <ul class="section-list" style="display:grid; grid-template-columns:1fr 1fr; gap:0;">
+                        {% for p in result.prevention %}
+                        <li><span class="li-dot" style="background:#8b5cf6;"></span>{{ p }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+            </div>
+
+            {% if result.matched_keywords %}
+            <div style="margin-top:0.5rem;">
+                <span style="font-size:0.76rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; font-weight:700;">Mots-clés détectés dans votre description :</span>
+                <div style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.5rem;">
+                    {% for kw in result.matched_keywords %}
+                    <span class="kw-chip">✓ {{ kw }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <a href="{{ url_for('main.maladie_detail', disease_id=result.id) }}" class="detail-link">
+                📋 Voir la fiche complète de cette maladie →
+            </a>
+
+        </div>
+    </div>
+    {% endfor %}
+
+    {% else %}
+    <div class="no-results">
+        <div style="font-size:3rem; margin-bottom:1rem;">🔍</div>
+        <h2 style="font-family:'Cormorant Garamond',serif; font-size:1.8rem; color:var(--white); margin-bottom:0.8rem;">Aucune correspondance trouvée</h2>
+        <p style="color:var(--muted); max-width:500px; margin:0 auto 1.5rem; line-height:1.6;">
+            Votre description ne correspond à aucune maladie de notre base. Décrivez vos symptômes avec plus de précision : localisation, durée, intensité, moment de la journée.
+        </p>
+        <a href="{{ url_for('main.consulter') }}" class="btn btn-primary">🔄 Nouvelle consultation</a>
+    </div>
+    {% endif %}
+
+    <div class="disclaimer-box">
+        <span style="font-size:1.3rem; flex-shrink:0;">⚕️</span>
+        <div>
+            <strong>Avertissement médical :</strong> Ce diagnostic est fourni à titre informatif uniquement, basé sur une analyse algorithmique de vos symptômes. Il ne remplace en aucun cas une consultation médicale professionnelle. En cas de symptômes graves, consultez immédiatement un médecin ou rendez-vous aux urgences.
+        </div>
+    </div>
+
+    <div class="actions-row">
+        <a href="{{ url_for('main.consulter') }}" class="btn btn-primary">🔄 Nouvelle consultation</a>
+        <a href="{{ url_for('main.maladies') }}" class="btn btn-ghost">📋 Encyclopédie des maladies</a>
+        {% if not user %}
+        <a href="{{ url_for('auth.register') }}" class="btn btn-ghost">💡 Créer un compte</a>
+        {% else %}
+        <a href="{{ url_for('main.historique') }}" class="btn btn-ghost">📊 Mon historique</a>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+function toggleCard(index) {
+    const body = document.getElementById('body-' + index);
+    const icon = document.getElementById('toggle-' + index);
+    if (body) body.classList.toggle('open');
+    if (icon) icon.classList.toggle('open');
+}
+</script>
+{% endblock %}

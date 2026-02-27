@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+{% block title %}Mon Profil — MédiSym{% endblock %}
+{% block extra_styles %}
+<style>
+    .profile-page {
+        max-width: 820px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem 4rem;
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .page-header h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: var(--white);
+    }
+
+    /* Profile card */
+    .profile-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .avatar-large {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: white;
+        flex-shrink: 0;
+        border: 3px solid rgba(255,255,255,0.1);
+    }
+
+    .profile-info h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.7rem;
+        color: var(--white);
+        margin-bottom: 0.3rem;
+    }
+
+    .profile-info .email { color: var(--muted); font-size: 0.92rem; margin-bottom: 0.6rem; }
+
+    .profile-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+    .tag {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .tag-member {
+        background: rgba(59,130,246,0.12);
+        border: 1px solid rgba(59,130,246,0.25);
+        color: #93c5fd;
+    }
+
+    /* Info sections */
+    .info-section {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-head {
+        padding: 1.2rem 1.8rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .section-head h3 { font-size: 1rem; font-weight: 700; color: var(--white); }
+
+    .info-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.8rem;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .info-row:last-child { border-bottom: none; }
+
+    .info-row .lbl {
+        font-size: 0.85rem;
+        color: var(--muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .info-row .val { font-size: 0.95rem; color: var(--text); font-weight: 500; }
+
+    /* Edit form */
+    .edit-form {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .edit-form h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--white);
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    /* Plan card */
+    .plan-display {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 1.8rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .plan-display.premium-glow {
+        border-color: rgba(245,158,11,0.35);
+        background: rgba(245,158,11,0.05);
+    }
+
+    .progress-track {
+        background: rgba(255,255,255,0.06);
+        border-radius: 10px;
+        height: 8px;
+        margin-top: 0.6rem;
+        overflow: hidden;
+        max-width: 280px;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 10px;
+        background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="profile-page">
+
+    <div class="page-header">
+        <h1>👤 Mon Profil</h1>
+        <div style="display:flex; gap:0.6rem;">
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-ghost">← Tableau de bord</a>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}{% endwith %}
+
+    <!-- Profile card -->
+    <div class="profile-card">
+        <div class="avatar-large">{{ user.username[0].upper() }}</div>
+        <div class="profile-info">
+            <h2>{{ user.username }}</h2>
+            <div class="email">{{ user.email }}</div>
+            <div class="profile-tags">
+                <span class="tag tag-member">Membre depuis {{ user.created_at.strftime('%B %Y') }}</span>
+                {% if user.is_premium %}
+                <span class="badge-premium">PREMIUM</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Plan & usage -->
+    <div class="plan-display {{ 'premium-glow' if user.is_premium else '' }}" style="margin-bottom:1.5rem;">
+        {% if user.is_premium %}
+        <div>
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.3rem;">
+                <span style="font-size:1.2rem;">⭐</span>
+                <strong style="color:#fcd34d; font-size:1.05rem;">Plan Premium actif</strong>
+            </div>
+            <div style="color:var(--muted); font-size:0.88rem;">
+                Consultations illimitées.
+                {% if user.subscription_expires %}
+                    Expire le {{ user.subscription_expires.strftime('%d/%m/%Y') }}.
+                {% endif %}
+            </div>
+        </div>
+        <span class="badge-premium" style="font-size:0.9rem; padding:0.4rem 1rem;">ACTIF</span>
+        {% else %}
+        <div style="flex:1;">
+            <div style="font-weight:700; color:var(--white); margin-bottom:0.4rem;">
+                Plan Gratuit — {{ user.monthly_uses }}/10 ce mois
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" style="width:{{ [(user.monthly_uses / 10 * 100)|int, 100]|min }}%;"></div>
+            </div>
+            <div style="font-size:0.82rem; color:var(--muted); margin-top:0.5rem;">
+                {{ user.remaining_uses() }} consultation{{ 's' if user.remaining_uses() != 1 }} restante{{ 's' if user.remaining_uses() != 1 }}
+            </div>
+        </div>
+        <a href="{{ url_for('main.abonnement') }}" class="btn btn-gold">⭐ Passer Premium</a>
+        {% endif %}
+    </div>
+
+    <!-- Account info -->
+    <div class="info-section">
+        <div class="section-head">
+            <span>📋</span>
+            <h3>Informations du compte</h3>
+        </div>
+        <div class="info-row">
+            <span class="lbl">Nom d'utilisateur</span>
+            <span class="val">{{ user.username }}</span>
+        </div>
+        <div class="info-row">
+            <span class="lbl">Adresse email</span>
+            <span class="val">{{ user.email }}</span>
+        </div>
+        <div class="info-row">
+            <span class="lbl">Plan actuel</span>
+            <span class="val">{{ 'Premium ⭐' if user.is_premium else 'Gratuit' }}</span>
+        </div>
+        <div class="info-row">
+            <span class="lbl">Date d'inscription</span>
+            <span class="val">{{ user.created_at.strftime('%d %B %Y') }}</span>
+        </div>
+        <div class="info-row">
+            <span class="lbl">Consultations totales</span>
+            <span class="val">{{ total_consultations }}</span>
+        </div>
+    </div>
+
+    <!-- Change password form -->
+    <div class="edit-form">
+        <h3>🔑 Changer le mot de passe</h3>
+        <form method="POST" action="{{ url_for('main.changer_mdp') }}">
+            <div class="form-group">
+                <label>Mot de passe actuel</label>
+                <input type="password" name="current_password" placeholder="••••••••" required>
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Nouveau mot de passe</label>
+                    <input type="password" name="new_password" placeholder="Minimum 6 caractères" required>
+                </div>
+                <div class="form-group">
+                    <label>Confirmer</label>
+                    <input type="password" name="confirm_password" placeholder="••••••••" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">🔒 Mettre à jour le mot de passe</button>
+        </form>
+    </div>
+
+    <!-- Danger zone -->
+    <div style="background:rgba(239,68,68,0.05); border:1px solid rgba(239,68,68,0.2); border-radius:18px; padding:1.5rem 2rem;">
+        <h3 style="font-size:0.95rem; font-weight:700; color:#fca5a5; margin-bottom:0.4rem;">⚠️ Zone de danger</h3>
+        <p style="font-size:0.88rem; color:var(--muted); margin-bottom:1rem;">La déconnexion met fin à votre session en cours.</p>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">Déconnexion</a>
+    </div>
+
+</div>
+{% endblock %}

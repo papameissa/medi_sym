@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+{% block title %}À Propos — MédiSym{% endblock %}
+{% block extra_styles %}
+<style>
+    .about-page { max-width: 900px; margin: 0 auto; padding: 4rem 1.5rem; }
+
+    .about-hero {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+
+    .about-hero h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 3.2rem;
+        font-weight: 700;
+        color: var(--white);
+        margin-bottom: 0.8rem;
+    }
+
+    .about-hero p { color: var(--muted); font-size: 1.1rem; line-height: 1.75; max-width: 580px; margin: 0 auto; }
+
+    /* Mission section */
+    .mission-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.2rem;
+        margin-bottom: 3rem;
+    }
+
+    .mission-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 2rem;
+    }
+
+    .mission-card h3 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.4rem;
+        color: var(--white);
+        margin-bottom: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .mission-card p { color: var(--muted); font-size: 0.92rem; line-height: 1.7; }
+
+    /* How it works */
+    .how-section {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .how-section h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.9rem;
+        color: var(--white);
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .steps {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+    }
+
+    .step {
+        text-align: center;
+        position: relative;
+    }
+
+    .step:not(:last-child)::after {
+        content: '→';
+        position: absolute;
+        right: -0.8rem;
+        top: 1.2rem;
+        color: rgba(148,163,184,0.3);
+        font-size: 1.2rem;
+    }
+
+    .step-num {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.1rem;
+        color: white;
+        margin: 0 auto 1rem;
+    }
+
+    .step h4 { font-size: 0.9rem; font-weight: 700; color: var(--white); margin-bottom: 0.4rem; }
+    .step p { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+
+    /* Disclaimer */
+    .disclaimer {
+        background: rgba(245,158,11,0.07);
+        border: 1px solid rgba(245,158,11,0.2);
+        border-radius: 18px;
+        padding: 2rem 2.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .disclaimer h3 {
+        color: #fcd34d;
+        font-size: 1.1rem;
+        margin-bottom: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .disclaimer p { color: var(--muted); font-size: 0.92rem; line-height: 1.75; }
+    .disclaimer p + p { margin-top: 0.8rem; }
+
+    /* DB stats */
+    .db-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 3rem;
+    }
+
+    .db-stat {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 1.2rem;
+        text-align: center;
+    }
+
+    .db-stat .n {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--accent2);
+    }
+
+    .db-stat .l {
+        font-size: 0.78rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-top: 0.2rem;
+        font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+        .mission-grid, .steps { grid-template-columns: 1fr 1fr; }
+        .db-stats { grid-template-columns: 1fr 1fr; }
+        .step:not(:last-child)::after { display: none; }
+    }
+
+    @media (max-width: 480px) {
+        .steps { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="about-page">
+
+    <div class="about-hero">
+        <div style="font-size:3.5rem; margin-bottom:1rem;">🩺</div>
+        <h1>À propos de MédiSym</h1>
+        <p>Un outil d'aide au diagnostic symptomatique conçu pour les populations
+        d'Afrique subsaharienne, disponible 24h/24 et 7j/7.</p>
+    </div>
+
+    <!-- DB Stats -->
+    <div class="db-stats">
+        <div class="db-stat">
+            <div class="n">30</div>
+            <div class="l">Maladies</div>
+        </div>
+        <div class="db-stat">
+            <div class="n">250+</div>
+            <div class="l">Symptômes</div>
+        </div>
+        <div class="db-stat">
+            <div class="n">3</div>
+            <div class="l">Niveaux d'accès</div>
+        </div>
+        <div class="db-stat">
+            <div class="n">24/7</div>
+            <div class="l">Disponible</div>
+        </div>
+    </div>
+
+    <!-- Mission -->
+    <div class="mission-grid">
+        <div class="mission-card">
+            <h3>🎯 Notre mission</h3>
+            <p>MédiSym vise à démocratiser l'accès à l'information médicale de qualité en Afrique.
+            Face aux déserts médicaux et à l'éloignement géographique, nous offrons un premier
+            niveau d'orientation symptomatique rapide et accessible.</p>
+        </div>
+        <div class="mission-card">
+            <h3>🌍 Adapté à l'Afrique</h3>
+            <p>Notre base de données est centrée sur les maladies les plus courantes
+            en Afrique subsaharienne : paludisme, typhoïde, tuberculose, anémie...
+            avec des conseils adaptés au contexte local et aux ressources disponibles.</p>
+        </div>
+        <div class="mission-card">
+            <h3>🔒 Confidentialité</h3>
+            <p>Vos données de santé sont sensibles. Nous ne les partageons avec aucun tiers.
+            Votre historique est accessible uniquement par vous-même et,
+            de manière anonymisée, par nos équipes pour améliorer le service.</p>
+        </div>
+        <div class="mission-card">
+            <h3>💡 Comment ça marche</h3>
+            <p>MédiSym analyse vos symptômes décrits en français naturel et les compare
+            à sa base de données médicale. Un score de correspondance est calculé pour
+            identifier les maladies les plus probables.</p>
+        </div>
+    </div>
+
+    <!-- Steps -->
+    <div class="how-section">
+        <h2>Comment utiliser MédiSym</h2>
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <h4>Décrivez vos symptômes</h4>
+                <p>En français naturel, dites ce que vous ressentez depuis combien de temps.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <h4>Analyse automatique</h4>
+                <p>Notre moteur détecte les mots-clés médicaux dans votre description.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <h4>Résultats détaillés</h4>
+                <p>Les 3 maladies les plus probables s'affichent avec leur niveau de confiance.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">4</div>
+                <h4>Consultez un médecin</h4>
+                <p>Munis de ces informations, consultez un professionnel de santé pour confirmation.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+        <h3>⚠️ Avertissement médical important</h3>
+        <p>
+            <strong style="color:#fcd34d;">MédiSym n'est pas un outil de diagnostic médical.</strong>
+            Les informations fournies ont un caractère purement informatif et éducatif.
+            Seul un professionnel de santé qualifié est habilité à poser un diagnostic médical.
+        </p>
+        <p>
+            En cas de symptômes graves, de doute, ou d'aggravation rapide de votre état,
+            consultez immédiatement un médecin ou rendez-vous aux urgences les plus proches.
+            Ne retardez jamais les soins médicaux nécessaires en vous fiant uniquement à cet outil.
+        </p>
+    </div>
+
+    <!-- CTA -->
+    <div style="text-align:center; padding: 2rem 0;">
+        <a href="{{ url_for('main.consulter') }}" class="btn btn-primary" style="font-size:1rem; padding:0.9rem 2.5rem; margin-right:1rem;">
+            🩺 Consulter maintenant
+        </a>
+        <a href="{{ url_for('main.maladies') }}" class="btn btn-ghost" style="font-size:1rem; padding:0.9rem 2.5rem;">
+            📋 Explorer les maladies
+        </a>
+    </div>
+
+</div>
+{% endblock %}

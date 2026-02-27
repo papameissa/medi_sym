@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+{% block title %}Consulter — MédiSym{% endblock %}
+{% block extra_styles %}
+<style>
+    .consult-container {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 4rem 1.5rem;
+    }
+
+    .consult-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .consult-header h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: var(--white);
+        line-height: 1.1;
+        margin-bottom: 0.8rem;
+    }
+
+    .consult-header p { color: var(--muted); font-size: 1rem; line-height: 1.6; }
+
+    .usage-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1rem 1.4rem;
+        margin-bottom: 2rem;
+        font-size: 0.9rem;
+    }
+
+    .usage-pills {
+        display: flex;
+        gap: 0.4rem;
+    }
+
+    .pill {
+        width: 28px;
+        height: 10px;
+        border-radius: 5px;
+        background: rgba(255,255,255,0.08);
+    }
+
+    .pill.used { background: var(--accent); }
+    .pill.available { background: rgba(59,130,246,0.25); }
+
+    .consult-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 2.5rem;
+    }
+
+    .examples {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .example-tag {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .example-tag:hover {
+        background: rgba(59,130,246,0.1);
+        border-color: rgba(59,130,246,0.3);
+        color: #93c5fd;
+    }
+
+    .consult-textarea {
+        width: 100%;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.2rem;
+        color: var(--text);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 1rem;
+        line-height: 1.6;
+        min-height: 160px;
+        resize: vertical;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        margin-bottom: 1.5rem;
+    }
+
+    .consult-textarea:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+    }
+
+    .consult-textarea::placeholder { color: rgba(148,163,184,0.5); }
+
+    .guest-limit-warning {
+        background: rgba(245,158,11,0.07);
+        border: 1px solid rgba(245,158,11,0.2);
+        border-radius: 12px;
+        padding: 1rem 1.2rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        font-size: 0.9rem;
+        color: #fcd34d;
+    }
+
+    .char-count {
+        font-size: 0.8rem;
+        color: var(--muted);
+        text-align: right;
+        margin-top: -1rem;
+        margin-bottom: 1rem;
+    }
+
+    .tips {
+        margin-top: 2.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border);
+    }
+
+    .tips h3 {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin-bottom: 1rem;
+    }
+
+    .tips-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8rem;
+    }
+
+    .tip {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        font-size: 0.87rem;
+        color: var(--muted);
+    }
+
+    .tip span:first-child { flex-shrink: 0; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="consult-container">
+    <div class="consult-header">
+        <h1>Comment vous sentez-vous ?</h1>
+        <p>Décrivez vos symptômes en détail. Plus vous êtes précis, meilleure sera l'analyse.</p>
+    </div>
+
+    <!-- Usage indicator -->
+    {% if user %}
+        <div class="usage-bar">
+            <div>
+                <div style="font-weight:600; color: var(--white); margin-bottom:0.2rem;">
+                    {% if user.is_premium %}
+                        ✨ Abonnement Premium — Illimité
+                    {% else %}
+                        {{ user.remaining_uses() }} consultation{{ 's' if user.remaining_uses() != 1 else '' }} restante{{ 's' if user.remaining_uses() != 1 else '' }} ce mois
+                    {% endif %}
+                </div>
+                <div style="font-size:0.82rem; color:var(--muted);">Compte {{ 'Premium' if user.is_premium else 'Gratuit' }}</div>
+            </div>
+            {% if not user.is_premium %}
+            <a href="{{ url_for('main.abonnement') }}" class="btn btn-gold" style="padding:0.45rem 1rem; font-size:0.85rem;">
+                ⭐ Illimité
+            </a>
+            {% endif %}
+        </div>
+    {% else %}
+        {% set remaining = guest_max - guest_uses %}
+        <div class="usage-bar">
+            <div>
+                <div style="font-weight:600; color:var(--white); margin-bottom:0.2rem;">
+                    {{ remaining }} essai{{ 's' if remaining != 1 else '' }} restant{{ 's' if remaining != 1 else '' }}
+                </div>
+                <div style="font-size:0.82rem; color:var(--muted);">Mode visiteur</div>
+            </div>
+            <div class="usage-pills">
+                {% for i in range(guest_max) %}
+                <div class="pill {{ 'used' if i < guest_uses else 'available' }}"></div>
+                {% endfor %}
+            </div>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary" style="padding:0.45rem 1rem; font-size:0.85rem;">
+                Créer un compte
+            </a>
+        </div>
+
+        {% if remaining <= 1 %}
+        <div class="guest-limit-warning">
+            ⚠️ Il vous reste <strong>{{ remaining }} essai</strong>. Créez un compte gratuit pour obtenir 10 consultations par mois.
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <div class="consult-card">
+        <!-- Quick examples -->
+        <div style="margin-bottom: 1.2rem;">
+            <div style="font-size:0.82rem; color:var(--muted); margin-bottom:0.6rem; text-transform:uppercase; letter-spacing:0.06em; font-weight:600;">Exemples de symptômes :</div>
+            <div class="examples">
+                <span class="example-tag" onclick="fillExample(this)">Fièvre et frissons depuis 2 jours</span>
+                <span class="example-tag" onclick="fillExample(this)">Toux, fatigue et sueurs nocturnes</span>
+                <span class="example-tag" onclick="fillExample(this)">Diarrhée et vomissements</span>
+                <span class="example-tag" onclick="fillExample(this)">Maux de tête, soif excessive et urination fréquente</span>
+                <span class="example-tag" onclick="fillExample(this)">Raideur nuque, fièvre, sensible à la lumière</span>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('main.consulter') }}">
+            <div class="form-group" style="margin-bottom:0.5rem;">
+                <label>Décrivez vos symptômes</label>
+                <textarea
+                    class="consult-textarea"
+                    name="symptoms"
+                    id="symptoms"
+                    placeholder="Ex : J'ai de la fièvre depuis 3 jours, des frissons, mal à la tête, des courbatures dans tout le corps et je me sens très fatigué..."
+                    maxlength="2000"
+                    oninput="updateCount()"
+                    required
+                ></textarea>
+            </div>
+            <div class="char-count"><span id="charCount">0</span>/2000 caractères</div>
+
+            <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:0.9rem; font-size:1rem;">
+                🔍 Analyser mes symptômes
+            </button>
+        </form>
+
+        <div class="tips">
+            <h3>💡 Conseils pour une meilleure analyse</h3>
+            <div class="tips-grid">
+                <div class="tip"><span>📅</span><span>Indiquez depuis combien de temps vous avez ces symptômes</span></div>
+                <div class="tip"><span>🌡️</span><span>Mentionnez si vous avez de la fièvre et sa température</span></div>
+                <div class="tip"><span>📍</span><span>Précisez la localisation de la douleur (ventre, poitrine...)</span></div>
+                <div class="tip"><span>⚡</span><span>Dites si les symptômes sont apparus progressivement ou brusquement</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateCount() {
+    const ta = document.getElementById('symptoms');
+    document.getElementById('charCount').textContent = ta.value.length;
+}
+
+function fillExample(el) {
+    const ta = document.getElementById('symptoms');
+    ta.value = el.textContent;
+    updateCount();
+    ta.focus();
+}
+</script>
+{% endblock %}

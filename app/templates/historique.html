@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% block title %}Mon Historique — MédiSym{% endblock %}
+{% block extra_styles %}
+<style>
+    .history-page {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem 4rem;
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .page-header h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: var(--white);
+    }
+
+    /* Stats strip */
+    .stats-strip {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .strip-stat {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 1.2rem 1.5rem;
+        text-align: center;
+    }
+
+    .strip-stat .val {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--white);
+        line-height: 1;
+    }
+
+    .strip-stat .lbl {
+        font-size: 0.78rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-top: 0.3rem;
+        font-weight: 600;
+    }
+
+    /* Consultation cards */
+    .consult-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: border-color 0.2s;
+        position: relative;
+    }
+
+    .consult-card:hover { border-color: rgba(59,130,246,0.25); }
+
+    .consult-number {
+        position: absolute;
+        top: 1.2rem;
+        right: 1.5rem;
+        font-size: 0.75rem;
+        color: rgba(148,163,184,0.4);
+        font-weight: 600;
+    }
+
+    .consult-date {
+        font-size: 0.78rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 600;
+        margin-bottom: 0.6rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .consult-symptoms-text {
+        color: var(--text);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        padding: 0.8rem 1rem;
+        background: rgba(255,255,255,0.03);
+        border-radius: 10px;
+        border-left: 3px solid var(--border);
+        font-style: italic;
+    }
+
+    .consult-results {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .result-chip {
+        background: rgba(59,130,246,0.1);
+        border: 1px solid rgba(59,130,246,0.2);
+        color: #93c5fd;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .result-chip .conf {
+        background: rgba(255,255,255,0.1);
+        padding: 0.1rem 0.4rem;
+        border-radius: 10px;
+        font-size: 0.72rem;
+        color: rgba(147,197,253,0.7);
+    }
+
+    .result-label {
+        font-size: 0.78rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 5rem 2rem;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+    }
+
+    /* Month separator */
+    .month-sep {
+        font-size: 0.78rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 700;
+        padding: 1.5rem 0 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .month-sep::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+    }
+
+    @media (max-width: 600px) { .stats-strip { grid-template-columns: 1fr 1fr; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="history-page">
+
+    <div class="page-header">
+        <div>
+            <h1>📋 Mon Historique</h1>
+            <p class="text-muted">Toutes vos consultations passées</p>
+        </div>
+        <a href="{{ url_for('main.consulter') }}" class="btn btn-primary">🩺 Nouvelle consultation</a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-strip">
+        <div class="strip-stat">
+            <div class="val">{{ consultations|length }}</div>
+            <div class="lbl">Total consultations</div>
+        </div>
+        <div class="strip-stat">
+            <div class="val">{{ this_month }}</div>
+            <div class="lbl">Ce mois-ci</div>
+        </div>
+        <div class="strip-stat">
+            <div class="val">{{ 'Illimité' if user.is_premium else user.remaining_uses() }}</div>
+            <div class="lbl">Restantes ce mois</div>
+        </div>
+    </div>
+
+    {% if not consultations %}
+    <div class="empty-state">
+        <div style="font-size:3.5rem; margin-bottom:1rem;">🔍</div>
+        <h2 style="font-family:'Cormorant Garamond',serif; font-size:1.8rem; color:var(--white); margin-bottom:0.6rem;">Aucune consultation</h2>
+        <p class="text-muted" style="max-width:380px; margin:0 auto 1.5rem; line-height:1.6;">
+            Vous n'avez pas encore effectué de consultation. Décrivez vos symptômes pour obtenir une analyse.
+        </p>
+        <a href="{{ url_for('main.consulter') }}" class="btn btn-primary">Commencer</a>
+    </div>
+    {% else %}
+
+    {% set current_month = namespace(val='') %}
+    {% for c in consultations %}
+        {% set month = c.created_at.strftime('%B %Y') %}
+        {% if month != current_month.val %}
+            {% set current_month.val = month %}
+            <div class="month-sep">{{ month }}</div>
+        {% endif %}
+
+        <div class="consult-card">
+            <div class="consult-number">#{{ loop.index }}</div>
+            <div class="consult-date">
+                📅 {{ c.created_at.strftime('%d %B %Y à %H:%M') }}
+            </div>
+            <div class="consult-symptoms-text">
+                "{{ c.symptoms_text }}"
+            </div>
+            {% if c.results %}
+            <div class="consult-results">
+                <span class="result-label">Diagnostics :</span>
+                {% import 'macros.html' as m ignore missing %}
+                {% set results_list = c.results | from_json %}
+                {% if results_list %}
+                    {% for r in results_list %}
+                    <span class="result-chip">
+                        {{ r.name }}
+                        <span class="conf">{{ r.confidence }}%</span>
+                    </span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Limite atteinte — MédiSym{% endblock %}
+{% block content %}
+<div style="max-width:580px; margin:0 auto; padding:5rem 1.5rem; text-align:center;">
+    <div style="font-size:4rem; margin-bottom:1.5rem;">🚫</div>
+    <h1 style="font-family:'Cormorant Garamond',serif; font-size:2.8rem; color:var(--white); margin-bottom:0.8rem; font-weight:700;">
+        Limite atteinte
+    </h1>
+    <p style="color:var(--muted); font-size:1.05rem; line-height:1.7; margin-bottom:2.5rem;">
+        Vous avez utilisé vos <strong style="color:var(--white);">3 essais gratuits</strong> en mode visiteur.
+        Créez un compte <strong style="color:var(--white);">gratuitement</strong> pour obtenir
+        <strong style="color:var(--accent2);">10 consultations par mois</strong> et accéder à votre historique.
+    </p>
+
+    <div style="background:var(--card); border:1px solid var(--border); border-radius:20px; padding:2rem; margin-bottom:2.5rem;">
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
+            <div style="text-align:center; padding:1rem; background:rgba(255,255,255,0.03); border-radius:12px;">
+                <div style="font-size:1.8rem; font-weight:800; color:var(--white); font-family:'Cormorant Garamond',serif;">3</div>
+                <div style="font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-top:0.2rem;">Visiteur</div>
+            </div>
+            <div style="text-align:center; padding:1rem; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.25); border-radius:12px;">
+                <div style="font-size:1.8rem; font-weight:800; color:var(--accent); font-family:'Cormorant Garamond',serif;">10</div>
+                <div style="font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-top:0.2rem;">Compte gratuit</div>
+            </div>
+            <div style="text-align:center; padding:1rem; background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.25); border-radius:12px;">
+                <div style="font-size:1.8rem; font-weight:800; color:#f59e0b; font-family:'Cormorant Garamond',serif;">∞</div>
+                <div style="font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-top:0.2rem;">Premium</div>
+            </div>
+        </div>
+        <p style="font-size:0.85rem; color:var(--muted);">Toutes les consultations incluent le diagnostic, les traitements et la prévention</p>
+    </div>
+
+    <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary" style="font-size:1rem; padding:0.9rem 2rem;">
+            🆓 Créer un compte gratuit
+        </a>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-ghost" style="font-size:1rem; padding:0.9rem 2rem;">
+            Se connecter
+        </a>
+    </div>
+</div>
+{% endblock %}

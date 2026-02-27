@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Utilisateurs — Admin MédiSym{% endblock %}
+{% block extra_styles %}
+<style>
+    .admin-container { max-width: 1100px; margin: 0 auto; padding: 3rem 1.5rem; }
+    .admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem; }
+    .admin-header h1 { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 700; color: var(--white); }
+    .admin-nav { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .admin-nav a { padding: 0.45rem 1rem; border-radius: 8px; font-size: 0.88rem; font-weight: 600; text-decoration: none; transition: all 0.2s; color: var(--muted); border: 1px solid var(--border); }
+    .admin-nav a:hover, .admin-nav a.active { color: var(--white); background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); }
+
+    .users-table { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .users-table table { width: 100%; }
+    .avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.85rem;
+        color: white;
+        flex-shrink: 0;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <div>
+            <h1>👥 Utilisateurs</h1>
+            <p class="text-muted">{{ users | length }} utilisateur{{ 's' if users | length != 1 else '' }} inscrit{{ 's' if users | length != 1 else '' }}</p>
+        </div>
+        <div class="admin-nav">
+            <a href="{{ url_for('admin.dashboard') }}">Tableau de bord</a>
+            <a href="{{ url_for('admin.subscriptions') }}">Abonnements</a>
+            <a href="{{ url_for('admin.users') }}" class="active">Utilisateurs</a>
+        </div>
+    </div>
+
+    <div class="users-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Utilisateur</th>
+                    <th>Email</th>
+                    <th>Plan</th>
+                    <th>Consult. ce mois</th>
+                    <th>Expire le</th>
+                    <th>Inscription</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:0.7rem;">
+                            <div class="avatar">{{ u.username[0].upper() }}</div>
+                            <span style="font-weight:600;">{{ u.username }}</span>
+                        </div>
+                    </td>
+                    <td style="color:var(--muted);">{{ u.email }}</td>
+                    <td>
+                        {% if u.is_premium %}
+                        <span class="badge-premium">PREMIUM</span>
+                        {% else %}
+                        <span style="color:var(--muted); font-size:0.88rem;">Gratuit</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align:center;">{{ u.monthly_uses }}</td>
+                    <td style="color:var(--muted); font-size:0.85rem;">
+                        {% if u.subscription_expires %}
+                            {{ u.subscription_expires.strftime('%d/%m/%Y') }}
+                        {% else %}—{% endif %}
+                    </td>
+                    <td style="color:var(--muted); font-size:0.85rem;">{{ u.created_at.strftime('%d/%m/%Y') }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin.toggle_premium', user_id=u.id) }}">
+                            {% if u.is_premium %}
+                            <button type="submit" class="btn btn-danger" style="padding:0.35rem 0.8rem; font-size:0.8rem;">Révoquer</button>
+                            {% else %}
+                            <button type="submit" class="btn btn-gold" style="padding:0.35rem 0.8rem; font-size:0.8rem;">→ Premium</button>
+                            {% endif %}
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

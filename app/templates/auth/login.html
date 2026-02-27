@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Connexion — MédiSym{% endblock %}
+{% block extra_styles %}
+<style>
+    .auth-container {
+        min-height: calc(100vh - 64px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1rem;
+    }
+
+    .auth-box {
+        width: 100%;
+        max-width: 440px;
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .auth-header h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: var(--white);
+        margin-bottom: 0.5rem;
+    }
+
+    .auth-header p { color: var(--muted); font-size: 0.95rem; }
+
+    .auth-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 2.5rem;
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: var(--muted);
+        font-size: 0.9rem;
+    }
+
+    .auth-footer a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    .auth-footer a:hover { text-decoration: underline; }
+
+    .demo-info {
+        background: rgba(59,130,246,0.06);
+        border: 1px solid rgba(59,130,246,0.15);
+        border-radius: 10px;
+        padding: 0.9rem 1rem;
+        font-size: 0.82rem;
+        color: var(--muted);
+        margin-top: 1.5rem;
+    }
+
+    .demo-info strong { color: #93c5fd; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="auth-container">
+    <div class="auth-box">
+        <div class="auth-header">
+            <h1>Bon retour 👋</h1>
+            <p>Connectez-vous pour accéder à vos consultations</p>
+        </div>
+        <div class="auth-card">
+            <form method="POST">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" placeholder="votre@email.com" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label>Mot de passe</label>
+                    <input type="password" name="password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:0.85rem;">
+                    Se connecter
+                </button>
+            </form>
+            <!-- <div class="demo-info">
+                <strong>Admin de démo :</strong> admin@medisym.com / Admin@1234
+            </div> -->
+        </div>
+        <div class="auth-footer">
+            Pas encore de compte ?
+            <a href="{{ url_for('auth.register') }}">S'inscrire gratuitement</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

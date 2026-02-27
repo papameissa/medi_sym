@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% block title %}Admin — MédiSym{% endblock %}
+{% block extra_styles %}
+<style>
+    .admin-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem;
+    }
+
+    .admin-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .admin-header h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: var(--white);
+    }
+
+    .admin-nav {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .admin-nav a {
+        padding: 0.45rem 1rem;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+        color: var(--muted);
+        border: 1px solid var(--border);
+    }
+
+    .admin-nav a:hover, .admin-nav a.active {
+        color: var(--white);
+        background: rgba(255,255,255,0.06);
+        border-color: rgba(255,255,255,0.15);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 1.4rem;
+    }
+
+    .stat-card .val {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: var(--white);
+        line-height: 1;
+    }
+
+    .stat-card .lbl {
+        font-size: 0.8rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-top: 0.4rem;
+        font-weight: 600;
+    }
+
+    .stat-card.highlight { border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.05); }
+    .stat-card.highlight .val { color: #f59e0b; }
+
+    .settings-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.8rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .settings-card h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--white);
+        margin-bottom: 1.2rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .recent-users { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .recent-users .sec-header {
+        padding: 1.2rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .sec-header h3 { font-size: 1rem; font-weight: 700; color: var(--white); }
+    .sec-header a { font-size: 0.85rem; color: var(--accent); text-decoration: none; }
+    .sec-header a:hover { text-decoration: underline; }
+
+    @media(max-width: 768px) {
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <div>
+            <h1>⚙️ Administration</h1>
+            <p class="text-muted">Panneau de gestion MédiSym</p>
+        </div>
+        <div class="admin-nav">
+            <a href="{{ url_for('admin.dashboard') }}" class="active">Tableau de bord</a>
+            <a href="{{ url_for('admin.subscriptions') }}">
+                Abonnements
+                {% if pending_requests > 0 %}
+                <span style="background:var(--red); color:white; font-size:0.7rem; padding:0.1rem 0.4rem; border-radius:10px; margin-left:0.3rem;">{{ pending_requests }}</span>
+                {% endif %}
+            </a>
+            <a href="{{ url_for('admin.users') }}">Utilisateurs</a>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="val">{{ total_users }}</div>
+            <div class="lbl">Utilisateurs total</div>
+        </div>
+        <div class="stat-card highlight">
+            <div class="val">{{ premium_users }}</div>
+            <div class="lbl">Abonnés Premium</div>
+        </div>
+        <div class="stat-card">
+            <div class="val">{{ total_consultations }}</div>
+            <div class="lbl">Consultations total</div>
+        </div>
+        <div class="stat-card" style="border-color:{% if pending_requests > 0 %}rgba(239,68,68,0.3){% else %}var(--border){% endif %};">
+            <div class="val" style="color:{% if pending_requests > 0 %}var(--red){% else %}var(--white){% endif %};">{{ pending_requests }}</div>
+            <div class="lbl">Demandes en attente</div>
+        </div>
+    </div>
+
+    <!-- Settings form -->
+    <div class="settings-card">
+        <h3>⚙️ Paramètres de l'abonnement</h3>
+        <form method="POST" action="{{ url_for('admin.update_settings') }}">
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Prix de l'abonnement (FCFA/mois)</label>
+                    <input type="number" name="subscription_price" value="{{ price }}" min="0" step="100" placeholder="5000">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Instructions de paiement (affichées aux utilisateurs)</label>
+                <textarea name="payment_info" rows="3" placeholder="Ex: Paiement par Orange Money au +221 77 XXX XX XX. Envoyez votre preuve de paiement après confirmation.">{{ payment_info }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">💾 Enregistrer les paramètres</button>
+        </form>
+    </div>
+
+    <!-- Recent users -->
+    <div class="recent-users">
+        <div class="sec-header">
+            <h3>👥 Derniers utilisateurs inscrits</h3>
+            <a href="{{ url_for('admin.users') }}">Voir tous →</a>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Utilisateur</th>
+                    <th>Email</th>
+                    <th>Plan</th>
+                    <th>Consultations</th>
+                    <th>Date d'inscription</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in recent_users %}
+                <tr>
+                    <td style="font-weight:600;">{{ u.username }}</td>
+                    <td style="color:var(--muted);">{{ u.email }}</td>
+                    <td>
+                        {% if u.is_premium %}
+                        <span class="badge-premium">PREMIUM</span>
+                        {% else %}
+                        <span style="color:var(--muted);">Gratuit</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ u.monthly_uses }}</td>
+                    <td style="color:var(--muted);">{{ u.created_at.strftime('%d/%m/%Y') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

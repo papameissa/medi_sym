@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+{% block title %}Toutes les Maladies — MédiSym{% endblock %}
+{% block extra_styles %}
+<style>
+    .page-hero {
+        padding: 4rem 2rem 3rem;
+        text-align: center;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .page-hero h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--white);
+        margin-bottom: 0.8rem;
+        letter-spacing: -0.02em;
+    }
+
+    .page-hero p { color: var(--muted); font-size: 1.05rem; line-height: 1.7; }
+
+    /* Filters */
+    .filters {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        padding: 0 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .filter-btn {
+        padding: 0.5rem 1.2rem;
+        border-radius: 30px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--muted);
+        font-family: 'DM Sans', sans-serif;
+        transition: all 0.2s;
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+        color: var(--white);
+        border-color: rgba(255,255,255,0.3);
+        background: rgba(255,255,255,0.07);
+    }
+
+    .filter-btn[data-filter="urgence"].active  { background: rgba(220,38,38,0.2); border-color: rgba(220,38,38,0.5); color: #fca5a5; }
+    .filter-btn[data-filter="grave"].active    { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); color: #fca5a5; }
+    .filter-btn[data-filter="modérée"].active  { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.4); color: #fcd34d; }
+    .filter-btn[data-filter="chronique"].active{ background: rgba(139,92,246,0.15); border-color: rgba(139,92,246,0.4); color: #c4b5fd; }
+    .filter-btn[data-filter="légère"].active   { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.4); color: #6ee7b7; }
+
+    /* Search */
+    .search-bar {
+        max-width: 500px;
+        margin: 0 auto 2.5rem;
+        padding: 0 2rem;
+    }
+
+    .search-bar input {
+        width: 100%;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--border);
+        border-radius: 40px;
+        padding: 0.8rem 1.5rem;
+        color: var(--text);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.95rem;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .search-bar input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+    }
+
+    .search-bar input::placeholder { color: rgba(148,163,184,0.5); }
+
+    /* Grid */
+    .diseases-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.2rem;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 2rem 4rem;
+    }
+
+    .disease-tile {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 1.5rem;
+        text-decoration: none;
+        transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+        display: block;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .disease-tile::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--tile-color, var(--accent));
+        border-radius: 18px 18px 0 0;
+    }
+
+    .disease-tile:hover {
+        transform: translateY(-4px);
+        border-color: rgba(255,255,255,0.12);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    }
+
+    .tile-icon {
+        font-size: 2.2rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .tile-name {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--white);
+        margin-bottom: 0.5rem;
+        line-height: 1.2;
+    }
+
+    .tile-desc {
+        font-size: 0.85rem;
+        color: var(--muted);
+        line-height: 1.5;
+        margin-bottom: 1rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .tile-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: auto;
+    }
+
+    .tile-keywords {
+        display: flex;
+        gap: 0.3rem;
+        flex-wrap: wrap;
+    }
+
+    .kw-mini {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.08);
+        color: var(--muted);
+        padding: 0.15rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.72rem;
+    }
+
+    .tile-arrow {
+        color: var(--muted);
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        transition: color 0.2s, transform 0.2s;
+    }
+
+    .disease-tile:hover .tile-arrow {
+        color: var(--white);
+        transform: translateX(3px);
+    }
+
+    .count-badge {
+        display: inline-block;
+        background: rgba(59,130,246,0.15);
+        border: 1px solid rgba(59,130,246,0.25);
+        color: #93c5fd;
+        padding: 0.25rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .no-results-msg {
+        text-align: center;
+        padding: 3rem;
+        color: var(--muted);
+        display: none;
+    }
+
+    @media (max-width: 900px) { .diseases-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 580px) { .diseases-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="page-hero">
+    <h1>📋 Encyclopédie des maladies</h1>
+    <p>Explorez notre base de données de {{ diseases|length }} maladies avec leurs symptômes,
+       traitements et conseils de prévention.</p>
+</div>
+
+<!-- Search -->
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="🔍  Rechercher une maladie..." oninput="filterDiseases()">
+</div>
+
+<!-- Filters -->
+<div class="filters">
+    <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">Toutes ({{ diseases|length }})</button>
+    <button class="filter-btn" data-filter="urgence"  onclick="setFilter('urgence', this)">🚨 Urgence</button>
+    <button class="filter-btn" data-filter="grave"    onclick="setFilter('grave', this)">⚠️ Grave</button>
+    <button class="filter-btn" data-filter="modérée"  onclick="setFilter('modérée', this)">🟡 Modérée</button>
+    <button class="filter-btn" data-filter="chronique" onclick="setFilter('chronique', this)">🔵 Chronique</button>
+    <button class="filter-btn" data-filter="légère"   onclick="setFilter('légère', this)">🟢 Légère</button>
+</div>
+
+<!-- Grid -->
+<div style="text-align:center; margin-bottom:1.5rem;">
+    <span class="count-badge" id="countBadge">{{ diseases|length }} maladies affichées</span>
+</div>
+
+<div class="diseases-grid" id="diseasesGrid">
+    {% for d in diseases %}
+    {% set icons = {'urgence': '🚨', 'grave': '⚠️', 'modérée': '🟡', 'chronique': '🔵', 'légère': '🟢'} %}
+    <a href="{{ url_for('main.maladie_detail', disease_id=d.id) }}"
+       class="disease-tile"
+       style="--tile-color: {{ d.color }};"
+       data-severity="{{ d.severity }}"
+       data-name="{{ d.name.lower() }}"
+       data-desc="{{ d.description.lower() }}">
+        <span class="tile-icon">{{ icons.get(d.severity, '🏥') }}</span>
+        <div class="tile-name">{{ d.name }}</div>
+        <div class="tile-desc">{{ d.description }}</div>
+        <div class="tile-footer">
+            <div>
+                <span class="badge badge-{{ d.severity }}">{{ d.severity }}</span>
+            </div>
+            <span class="tile-arrow">→</span>
+        </div>
+        <div class="tile-keywords" style="margin-top:0.8rem;">
+            {% for kw in d.keywords[:3] %}
+            <span class="kw-mini">{{ kw }}</span>
+            {% endfor %}
+        </div>
+    </a>
+    {% endfor %}
+</div>
+
+<div class="no-results-msg" id="noResults">
+    <div style="font-size:2.5rem; margin-bottom:0.8rem;">🔍</div>
+    Aucune maladie ne correspond à votre recherche.
+</div>
+
+<script>
+let currentFilter = 'all';
+
+function setFilter(filter, btn) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterDiseases();
+}
+
+function filterDiseases() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const tiles = document.querySelectorAll('.disease-tile');
+    let visible = 0;
+
+    tiles.forEach(tile => {
+        const matchFilter = currentFilter === 'all' || tile.dataset.severity === currentFilter;
+        const matchSearch = !q || tile.dataset.name.includes(q) || tile.dataset.desc.includes(q);
+        const show = matchFilter && matchSearch;
+        tile.style.display = show ? 'block' : 'none';
+        if (show) visible++;
+    });
+
+    document.getElementById('countBadge').textContent = visible + ' maladie' + (visible !== 1 ? 's' : '') + ' affichée' + (visible !== 1 ? 's' : '');
+    document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+}
+</script>
+{% endblock %}

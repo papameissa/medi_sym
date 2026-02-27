@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}Premium — MédiSym{% endblock %}
+{% block extra_styles %}
+<style>
+    .sub-container {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 4rem 1.5rem;
+    }
+
+    .sub-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .sub-header h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--white);
+        margin-bottom: 0.8rem;
+    }
+
+    .price-display {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 4rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1;
+        margin: 1rem 0;
+    }
+
+    .price-period { color: var(--muted); font-size: 1rem; margin-bottom: 2rem; }
+
+    .perks-list {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        list-style: none;
+    }
+
+    .perks-list li {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.8rem 0;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+        font-size: 0.95rem;
+        color: var(--text);
+    }
+
+    .perks-list li:last-child { border-bottom: none; }
+
+    .perk-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        background: rgba(245,158,11,0.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .payment-info-box {
+        background: rgba(59,130,246,0.06);
+        border: 1px solid rgba(59,130,246,0.2);
+        border-radius: 14px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        font-size: 0.95rem;
+        line-height: 1.7;
+        color: var(--text);
+    }
+
+    .payment-info-box h4 {
+        color: #93c5fd;
+        margin-bottom: 0.6rem;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .request-form {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 2rem;
+    }
+
+    .pending-banner {
+        background: rgba(245,158,11,0.08);
+        border: 1px solid rgba(245,158,11,0.25);
+        border-radius: 14px;
+        padding: 1.5rem;
+        text-align: center;
+        color: #fcd34d;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="sub-container">
+    <div class="sub-header">
+        <div style="font-size:3rem; margin-bottom:0.5rem;">⭐</div>
+        <h1>Passez Premium</h1>
+        <p class="text-muted">Consultations illimitées pour votre santé</p>
+    </div>
+
+    <div style="text-align:center;">
+        <div class="price-display">{{ price }} FCFA</div>
+        <div class="price-period">par mois — prix fixé par l'administrateur</div>
+    </div>
+
+    <ul class="perks-list">
+        <li>
+            <div class="perk-icon">♾️</div>
+            <div><strong>Consultations illimitées</strong> — Analysez autant de symptômes que vous voulez</div>
+        </li>
+        <li>
+            <div class="perk-icon">📋</div>
+            <div><strong>Historique complet</strong> — Accédez à toutes vos consultations</div>
+        </li>
+        <li>
+            <div class="perk-icon">⚡</div>
+            <div><strong>Sans restriction mensuelle</strong> — Fini les limites de 10 par mois</div>
+        </li>
+        <li>
+            <div class="perk-icon">🔒</div>
+            <div><strong>Données sécurisées</strong> — Votre historique médical est privé</div>
+        </li>
+    </ul>
+
+    <!-- Payment instructions -->
+    <div class="payment-info-box">
+        <h4>💳 Comment payer ?</h4>
+        {{ payment_info or 'Contactez l\'administrateur pour les modalités de paiement.' }}
+    </div>
+
+    {% if pending %}
+    <!-- Request already pending -->
+    <div class="pending-banner">
+        <div style="font-size:2rem; margin-bottom:0.8rem;">⏳</div>
+        <h3 style="font-size:1.2rem; margin-bottom:0.5rem;">Demande en cours de traitement</h3>
+        <p style="color:var(--muted); font-size:0.9rem;">
+            Votre demande d'abonnement a été envoyée et est en attente de validation par l'administrateur.
+            Vous serez notifié dès qu'elle sera traitée.
+        </p>
+    </div>
+    {% else %}
+    <!-- Subscription request form -->
+    <div class="request-form">
+        <h3 style="font-size:1.1rem; color:var(--white); margin-bottom:0.5rem; font-weight:700;">
+            📩 Envoyer une demande d'abonnement
+        </h3>
+        <p class="text-muted" style="font-size:0.88rem; margin-bottom:1.5rem; line-height:1.5;">
+            Après paiement, soumettez votre preuve de paiement ci-dessous.
+            L'administrateur activera votre abonnement manuellement.
+        </p>
+        <form method="POST">
+            <div class="form-group">
+                <label>Preuve de paiement (référence de transaction, capture d'écran, etc.)</label>
+                <textarea name="payment_proof" placeholder="Ex: Référence Orange Money: #OM2024123456789 — Montant: {{ price }} FCFA..." rows="4"></textarea>
+            </div>
+            <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; padding:0.9rem; font-size:1rem;">
+                ✉️ Envoyer la demande
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

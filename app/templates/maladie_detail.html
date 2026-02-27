@@ -1,0 +1,385 @@
+{% extends "base.html" %}
+{% block title %}{{ disease.name }} — MédiSym{% endblock %}
+{% block extra_styles %}
+<style>
+    .detail-page {
+        max-width: 950px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem 4rem;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-bottom: 2.5rem;
+    }
+
+    .breadcrumb a { color: var(--muted); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--white); }
+    .breadcrumb span { color: rgba(148,163,184,0.4); }
+
+    /* Hero banner */
+    .disease-hero {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .disease-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: {{ disease.color }};
+    }
+
+    .disease-hero::after {
+        content: '';
+        position: absolute;
+        top: -60px;
+        right: -60px;
+        width: 200px;
+        height: 200px;
+        background: {{ disease.color }};
+        opacity: 0.05;
+        border-radius: 50%;
+    }
+
+    .hero-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .disease-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: var(--white);
+        line-height: 1.1;
+        margin-bottom: 0.8rem;
+    }
+
+    .hero-meta { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+
+    .disease-description {
+        color: var(--muted);
+        font-size: 1rem;
+        line-height: 1.75;
+        max-width: 650px;
+    }
+
+    .severity-icon {
+        font-size: 4rem;
+        opacity: 0.9;
+        flex-shrink: 0;
+    }
+
+    /* Sections grid */
+    .sections-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.2rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .info-panel {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 1.8rem;
+    }
+
+    .info-panel.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .panel-header {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        margin-bottom: 1.2rem;
+        padding-bottom: 0.9rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .panel-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .panel-header h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--white);
+    }
+
+    .panel-header p {
+        font-size: 0.78rem;
+        color: var(--muted);
+        margin-top: 0.1rem;
+    }
+
+    .item-list { list-style: none; padding: 0; }
+
+    .item-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.7rem;
+        padding: 0.65rem 0;
+        border-bottom: 1px solid rgba(255,255,255,0.03);
+        font-size: 0.92rem;
+        color: var(--text);
+        line-height: 1.45;
+    }
+
+    .item-list li:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .li-dot {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        flex-shrink: 0;
+        margin-top: 0.1rem;
+    }
+
+    /* Keywords cloud */
+    .keywords-section {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 1.8rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .keywords-cloud {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .kw-chip {
+        background: rgba(59,130,246,0.08);
+        border: 1px solid rgba(59,130,246,0.18);
+        color: #93c5fd;
+        padding: 0.35rem 0.9rem;
+        border-radius: 30px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    /* Emergency banner */
+    .emergency-banner {
+        background: rgba(220,38,38,0.1);
+        border: 2px solid rgba(220,38,38,0.4);
+        border-radius: 16px;
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .emergency-banner h4 { color: #fca5a5; font-size: 1rem; margin-bottom: 0.3rem; }
+    .emergency-banner p { color: #fca5a5; font-size: 0.9rem; line-height: 1.5; opacity: 0.85; }
+
+    /* CTA */
+    .cta-strip {
+        background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(6,182,212,0.08));
+        border: 1px solid rgba(59,130,246,0.2);
+        border-radius: 18px;
+        padding: 2rem;
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .cta-strip h3 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.7rem;
+        color: var(--white);
+        margin-bottom: 0.6rem;
+    }
+
+    .cta-strip p { color: var(--muted); font-size: 0.95rem; margin-bottom: 1.5rem; }
+
+    .cta-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    @media (max-width: 768px) {
+        .sections-grid { grid-template-columns: 1fr; }
+        .info-panel.full-width { grid-column: 1; }
+        .disease-title { font-size: 2rem; }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="detail-page">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="{{ url_for('main.index') }}">Accueil</a>
+        <span>›</span>
+        <a href="{{ url_for('main.maladies') }}">Maladies</a>
+        <span>›</span>
+        <span style="color:var(--text);">{{ disease.name }}</span>
+    </div>
+
+    <!-- Emergency alert -->
+    {% if disease.severity == 'urgence' %}
+    <div class="emergency-banner">
+        <span style="font-size:2.5rem; flex-shrink:0;">🚨</span>
+        <div>
+            <h4>URGENCE MÉDICALE</h4>
+            <p>Cette maladie constitue une urgence médicale grave. En cas de suspicion, appelez le SAMU (15) ou rendez-vous immédiatement aux urgences. Ne tentez pas de vous automédiquer.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Hero -->
+    <div class="disease-hero">
+        <div class="hero-top">
+            <div>
+                <div class="hero-meta">
+                    <span class="badge badge-{{ disease.severity }}">{{ disease.severity }}</span>
+                    <span style="background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--muted); padding:0.22rem 0.7rem; border-radius:20px; font-size:0.78rem;">
+                        {{ disease.keywords|length }} symptômes référencés
+                    </span>
+                </div>
+                <h1 class="disease-title">{{ disease.name }}</h1>
+                <p class="disease-description">{{ disease.description }}</p>
+            </div>
+            <div class="severity-icon">
+                {% if disease.severity == 'urgence' %}🚨
+                {% elif disease.severity == 'grave' %}⚠️
+                {% elif disease.severity == 'modérée' %}🟡
+                {% elif disease.severity == 'chronique' %}🔵
+                {% else %}🟢{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Main sections grid -->
+    <div class="sections-grid">
+
+        <!-- Symptoms -->
+        <div class="info-panel">
+            <div class="panel-header">
+                <div class="panel-icon" style="background:rgba(6,182,212,0.12);">🩺</div>
+                <div>
+                    <h3>Symptômes typiques</h3>
+                    <p>Signes cliniques à surveiller</p>
+                </div>
+            </div>
+            <ul class="item-list">
+                {% for s in disease.symptoms %}
+                <li>
+                    <div class="li-dot" style="background:rgba(6,182,212,0.15); color:#22d3ee;">·</div>
+                    {{ s }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Treatment -->
+        <div class="info-panel">
+            <div class="panel-header">
+                <div class="panel-icon" style="background:rgba(16,185,129,0.12);">💊</div>
+                <div>
+                    <h3>Traitement recommandé</h3>
+                    <p>Options thérapeutiques disponibles</p>
+                </div>
+            </div>
+            <ul class="item-list">
+                {% for t in disease.treatment %}
+                <li>
+                    <div class="li-dot" style="background:rgba(16,185,129,0.15); color:#34d399;">▸</div>
+                    {{ t }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Prevention - full width -->
+        <div class="info-panel full-width">
+            <div class="panel-header">
+                <div class="panel-icon" style="background:rgba(245,158,11,0.12);">🛡️</div>
+                <div>
+                    <h3>Prévention</h3>
+                    <p>Comment éviter cette maladie</p>
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.2rem;">
+                <ul class="item-list">
+                    {% for p in disease.prevention[:((disease.prevention|length + 1) // 2)] %}
+                    <li>
+                        <div class="li-dot" style="background:rgba(245,158,11,0.15); color:#fbbf24;">✓</div>
+                        {{ p }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                <ul class="item-list">
+                    {% for p in disease.prevention[((disease.prevention|length + 1) // 2):] %}
+                    <li>
+                        <div class="li-dot" style="background:rgba(245,158,11,0.15); color:#fbbf24;">✓</div>
+                        {{ p }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keywords -->
+    <div class="keywords-section">
+        <div class="panel-header" style="margin-bottom:0; padding-bottom:0; border-bottom:none;">
+            <div class="panel-icon" style="background:rgba(139,92,246,0.12);">🏷️</div>
+            <div>
+                <h3>Mots-clés de détection</h3>
+                <p style="font-size:0.78rem; color:var(--muted);">Termes utilisés pour identifier cette maladie lors de la consultation</p>
+            </div>
+        </div>
+        <div class="keywords-cloud">
+            {% for kw in disease.keywords %}
+            <span class="kw-chip">{{ kw }}</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-strip">
+        <h3>Vous ressentez ces symptômes ?</h3>
+        <p>Utilisez notre outil de diagnostic pour analyser vos symptômes et obtenir une évaluation personnalisée.</p>
+        <div class="cta-buttons">
+            <a href="{{ url_for('main.consulter') }}" class="btn btn-primary" style="font-size:1rem; padding:0.85rem 2rem;">
+                🩺 Consulter maintenant
+            </a>
+            <a href="{{ url_for('main.maladies') }}" class="btn btn-ghost" style="font-size:1rem; padding:0.85rem 2rem;">
+                ← Retour aux maladies
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

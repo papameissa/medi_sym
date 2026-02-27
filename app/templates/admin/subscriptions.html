@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Abonnements — Admin MédiSym{% endblock %}
+{% block extra_styles %}
+<style>
+    .admin-container { max-width: 1100px; margin: 0 auto; padding: 3rem 1.5rem; }
+    .admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem; }
+    .admin-header h1 { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 700; color: var(--white); }
+    .admin-nav { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .admin-nav a { padding: 0.45rem 1rem; border-radius: 8px; font-size: 0.88rem; font-weight: 600; text-decoration: none; transition: all 0.2s; color: var(--muted); border: 1px solid var(--border); }
+    .admin-nav a:hover, .admin-nav a.active { color: var(--white); background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); }
+
+    .req-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: border-color 0.2s;
+    }
+
+    .req-card.pending { border-left: 3px solid var(--gold); }
+    .req-card.approved { border-left: 3px solid var(--green); }
+    .req-card.rejected { border-left: 3px solid rgba(239,68,68,0.5); opacity: 0.7; }
+
+    .req-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+        margin-bottom: 1rem;
+    }
+
+    .req-actions {
+        display: flex;
+        gap: 0.6rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .duration-input {
+        width: 80px;
+        padding: 0.4rem 0.7rem;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-size: 0.88rem;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .proof-box {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.8rem 1rem;
+        font-size: 0.88rem;
+        color: var(--muted);
+        font-style: italic;
+    }
+
+    .empty-state { text-align: center; padding: 4rem; color: var(--muted); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <div>
+            <h1>📬 Demandes d'abonnement</h1>
+            <p class="text-muted">Gérez les demandes d'abonnement Premium</p>
+        </div>
+        <div class="admin-nav">
+            <a href="{{ url_for('admin.dashboard') }}">Tableau de bord</a>
+            <a href="{{ url_for('admin.subscriptions') }}" class="active">Abonnements</a>
+            <a href="{{ url_for('admin.users') }}">Utilisateurs</a>
+        </div>
+    </div>
+
+    {% if not requests %}
+    <div class="empty-state">
+        <div style="font-size:3rem; margin-bottom:1rem;">📭</div>
+        <div>Aucune demande d'abonnement pour l'instant.</div>
+    </div>
+    {% else %}
+    {% for req in requests %}
+    <div class="req-card {{ req.status }}">
+        <div class="req-meta">
+            <div>
+                <div style="font-weight:700; color:var(--white); font-size:1rem;">
+                    {{ req.user.username }}
+                    <span style="color:var(--muted); font-weight:400; font-size:0.88rem; margin-left:0.5rem;">{{ req.user.email }}</span>
+                </div>
+                <div style="font-size:0.82rem; color:var(--muted); margin-top:0.2rem;">
+                    📅 {{ req.created_at.strftime('%d/%m/%Y à %H:%M') }}
+                </div>
+            </div>
+            <div>
+                {% if req.status == 'pending' %}
+                <span style="background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); color:#fcd34d; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.8rem; font-weight:700;">⏳ EN ATTENTE</span>
+                {% elif req.status == 'approved' %}
+                <span style="background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); color:#6ee7b7; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.8rem; font-weight:700;">✓ APPROUVÉ</span>
+                {% else %}
+                <span style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); color:#fca5a5; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.8rem; font-weight:700;">✗ REJETÉ</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if req.payment_proof %}
+        <div class="proof-box">
+            <strong style="color:var(--text); font-style:normal;">Preuve de paiement :</strong>
+            {{ req.payment_proof }}
+        </div>
+        {% endif %}
+
+        {% if req.status == 'pending' %}
+        <div class="req-actions" style="margin-top:1rem;">
+            <form method="POST" action="{{ url_for('admin.approve_subscription', req_id=req.id) }}" style="display:flex; align-items:center; gap:0.5rem;">
+                <input type="number" name="duration" value="30" min="1" max="365" class="duration-input" title="Durée en jours">
+                <span style="font-size:0.82rem; color:var(--muted);">jours</span>
+                <button type="submit" class="btn btn-primary" style="padding:0.5rem 1.2rem; font-size:0.88rem;">✓ Approuver</button>
+            </form>
+            <form method="POST" action="{{ url_for('admin.reject_subscription', req_id=req.id) }}">
+                <button type="submit" class="btn btn-danger" style="padding:0.5rem 1.2rem; font-size:0.88rem;">✗ Rejeter</button>
+            </form>
+        </div>
+        {% endif %}
+
+        {% if req.status == 'approved' and req.user.subscription_expires %}
+        <div style="font-size:0.82rem; color:var(--green); margin-top:0.8rem;">
+            ✓ Abonnement actif jusqu'au {{ req.user.subscription_expires.strftime('%d/%m/%Y') }}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,371 @@
+{% extends "base.html" %}
+{% block title %}MédiSym — Analysez vos symptômes{% endblock %}
+{% block extra_styles %}
+<style>
+    .hero {
+        padding: 7rem 2rem 5rem;
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(59,130,246,0.1);
+        border: 1px solid rgba(59,130,246,0.25);
+        color: #93c5fd;
+        padding: 0.35rem 1rem;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 1.5rem;
+    }
+
+    .hero h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(2.8rem, 6vw, 5rem);
+        font-weight: 700;
+        line-height: 1.1;
+        color: var(--white);
+        margin-bottom: 1.2rem;
+        letter-spacing: -0.02em;
+    }
+
+    .hero h1 span {
+        background: linear-gradient(135deg, #3b82f6, #06b6d4);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .hero p {
+        color: var(--muted);
+        font-size: 1.15rem;
+        line-height: 1.7;
+        max-width: 560px;
+        margin: 0 auto 2.5rem;
+    }
+
+    .hero-cta {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .pulse-dot {
+        width: 8px;
+        height: 8px;
+        background: #22d3ee;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    /* Stats */
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+        max-width: 700px;
+        margin: 5rem auto 0;
+    }
+
+    .stat-item {
+        background: var(--card);
+        padding: 1.8rem;
+        text-align: center;
+    }
+
+    .stat-item .num {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--white);
+        display: block;
+    }
+
+    .stat-item .lbl {
+        color: var(--muted);
+        font-size: 0.85rem;
+        margin-top: 0.3rem;
+    }
+
+    /* Features */
+    .features {
+        padding: 5rem 2rem;
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.2rem;
+        color: var(--white);
+        text-align: center;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .section-sub {
+        color: var(--muted);
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.2rem;
+    }
+
+    .feature-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.8rem;
+        transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .feature-card:hover {
+        border-color: rgba(59,130,246,0.3);
+        transform: translateY(-3px);
+    }
+
+    .feature-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .feature-card h3 {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--white);
+        margin-bottom: 0.6rem;
+    }
+
+    .feature-card p {
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    /* Plans */
+    .plans {
+        padding: 4rem 2rem;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .plans-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.2rem;
+        margin-top: 3rem;
+    }
+
+    .plan-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+    }
+
+    .plan-card.featured {
+        border-color: rgba(245,158,11,0.5);
+        background: rgba(245,158,11,0.05);
+    }
+
+    .plan-card.featured::before {
+        content: '⭐ POPULAIRE';
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: #000;
+        font-size: 0.7rem;
+        font-weight: 800;
+        padding: 0.25rem 0.9rem;
+        border-radius: 20px;
+        letter-spacing: 0.06em;
+        white-space: nowrap;
+    }
+
+    .plan-name {
+        font-size: 0.8rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 700;
+        margin-bottom: 0.8rem;
+    }
+
+    .plan-price {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--white);
+        line-height: 1;
+    }
+
+    .plan-period { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; margin-top: 0.3rem; }
+
+    .plan-features { list-style: none; text-align: left; margin-bottom: 1.8rem; }
+    .plan-features li {
+        color: var(--muted);
+        font-size: 0.9rem;
+        padding: 0.4rem 0;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+    .plan-features li::before { content: '✓'; color: var(--green); font-weight: 700; }
+
+    /* Warning */
+    .warning-banner {
+        background: rgba(245,158,11,0.08);
+        border: 1px solid rgba(245,158,11,0.2);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        max-width: 700px;
+        margin: 3rem auto;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.8rem;
+        font-size: 0.88rem;
+        color: #fcd34d;
+    }
+
+    @media (max-width: 768px) {
+        .features-grid, .plans-grid, .stats { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-tag">
+        <div class="pulse-dot"></div>
+        Intelligence Médicale Symbolique
+    </div>
+    <h1>Identifiez vos<br><span>symptômes</span> rapidement</h1>
+    <p>
+        Décrivez ce que vous ressentez en français naturel.
+        MédiSym analyse vos symptômes et identifie les maladies possibles
+        avec traitements et conseils de prévention.
+    </p>
+    <div class="hero-cta">
+        <a href="{{ url_for('main.consulter') }}" class="btn btn-primary" style="font-size:1rem; padding: 0.85rem 2rem;">
+            🩺 Consulter maintenant
+        </a>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-ghost" style="font-size:1rem; padding: 0.85rem 2rem;">
+            Créer un compte gratuit
+        </a>
+    </div>
+
+    <div class="stats">
+        <div class="stat-item">
+            <span class="num">30</span>
+            <div class="lbl">Maladies analysées</div>
+        </div>
+        <div class="stat-item">
+            <span class="num">250+</span>
+            <div class="lbl">Symptômes reconnus</div>
+        </div>
+        <div class="stat-item">
+            <span class="num">24/7</span>
+            <div class="lbl">Disponible</div>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+    <h2 class="section-title">Comment ça fonctionne</h2>
+    <p class="section-sub">Simple, rapide et informatif</p>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">📝</div>
+            <h3>Décrivez vos symptômes</h3>
+            <p>Exprimez-vous librement en français. « J'ai de la fièvre, des frissons et mal à la tête... »</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🔍</div>
+            <h3>Analyse intelligente</h3>
+            <p>Notre moteur compare vos symptômes à une base médicale de maladies courantes en Afrique.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">💊</div>
+            <h3>Résultats détaillés</h3>
+            <p>Obtenez le diagnostic probable, les traitements disponibles et les moyens de prévention.</p>
+        </div>
+    </div>
+</section>
+
+<!-- PLANS -->
+<section class="plans">
+    <h2 class="section-title">Choisissez votre plan</h2>
+    <p class="section-sub">Commencez gratuitement, évoluez selon vos besoins</p>
+    <div class="plans-grid">
+        <div class="plan-card">
+            <div class="plan-name">Visiteur</div>
+            <div class="plan-price">Gratuit</div>
+            <div class="plan-period">sans inscription</div>
+            <ul class="plan-features">
+                <li>3 consultations</li>
+                <li>Résultats complets</li>
+                <li>Pas d'historique</li>
+            </ul>
+            <a href="{{ url_for('main.consulter') }}" class="btn btn-ghost" style="width:100%; justify-content:center;">Essayer</a>
+        </div>
+        <div class="plan-card featured">
+            <div class="plan-name">Compte Gratuit</div>
+            <div class="plan-price">0 FCFA</div>
+            <div class="plan-period">par mois</div>
+            <ul class="plan-features">
+                <li>10 consultations/mois</li>
+                <li>Historique complet</li>
+                <li>Tableau de bord</li>
+            </ul>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary" style="width:100%; justify-content:center;">S'inscrire</a>
+        </div>
+        <div class="plan-card">
+            <div class="plan-name">Premium</div>
+            <div class="plan-price">Sur demande</div>
+            <div class="plan-period">prix fixé par admin</div>
+            <ul class="plan-features">
+                <li>Consultations illimitées</li>
+                <li>Priorité de support</li>
+                <li>Historique complet</li>
+            </ul>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-gold" style="width:100%; justify-content:center;">S'abonner</a>
+        </div>
+    </div>
+</section>
+
+<!-- DISCLAIMER -->
+<div class="warning-banner" style="padding: 1rem 2rem; max-width: 900px;">
+    <span style="font-size: 1.4rem;">⚠️</span>
+    <div>
+        <strong>Avertissement médical :</strong> MédiSym est un outil d'information et d'aide à la décision.
+        Il ne remplace en aucun cas une consultation médicale professionnelle.
+        En cas d'urgence ou de symptômes graves, consultez immédiatement un médecin ou rendez-vous aux urgences.
+    </div>
+</div>
+{% endblock %}

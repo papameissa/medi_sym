@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Mon Espace — MédiSym{% endblock %}
+{% block extra_styles %}
+<style>
+    .dash { max-width: 1050px; margin: 0 auto; padding: 3rem 1.5rem 4rem; }
+    .dash-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem; }
+    .dash-top h1 { font-family: 'Cormorant Garamond', serif; font-size: 2.3rem; font-weight: 700; color: var(--white); margin-bottom: 0.2rem; }
+    .dash-top p { color: var(--muted); }
+
+    .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    .kpi { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.4rem 1.5rem; transition: border-color 0.2s; }
+    .kpi:hover { border-color: rgba(59,130,246,0.25); }
+    .kpi-val { font-family: 'Cormorant Garamond', serif; font-size: 2.3rem; font-weight: 700; color: var(--white); line-height: 1; margin-bottom: 0.4rem; }
+    .kpi-lbl { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+
+    .plan-banner { border-radius: 18px; padding: 1.8rem 2rem; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; }
+    .plan-free { background: var(--card); border: 1px solid var(--border); }
+    .plan-premium { background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.3); }
+    .progress-wrap { max-width: 320px; }
+    .progress-label { font-weight: 700; color: var(--white); margin-bottom: 0.5rem; }
+    .progress-bar { background: rgba(255,255,255,0.06); border-radius: 10px; height: 8px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+    .progress-note { font-size: 0.82rem; color: var(--muted); margin-top: 0.5rem; }
+
+    .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    .action-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; text-decoration: none; text-align: center; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; align-items: center; gap: 0.7rem; }
+    .action-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.12); box-shadow: 0 8px 30px rgba(0,0,0,0.25); }
+    .action-icon { font-size: 2rem; }
+    .action-title { font-size: 0.92rem; font-weight: 700; color: var(--white); }
+    .action-desc { font-size: 0.8rem; color: var(--muted); }
+
+    .recent-block { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; }
+    .block-header { padding: 1.2rem 1.8rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .block-header h3 { font-size: 1rem; font-weight: 700; color: var(--white); }
+    .block-header a { font-size: 0.85rem; color: var(--accent); text-decoration: none; }
+    .block-header a:hover { text-decoration: underline; }
+    .mini-consult { padding: 1rem 1.8rem; border-bottom: 1px solid rgba(255,255,255,0.04); display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; transition: background 0.15s; }
+    .mini-consult:last-child { border-bottom: none; }
+    .mini-consult:hover { background: rgba(255,255,255,0.02); }
+    .mini-symptom { font-size: 0.9rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 500px; }
+    .mini-date { font-size: 0.8rem; color: var(--muted); flex-shrink: 0; }
+    .empty-recent { padding: 2.5rem; text-align: center; color: var(--muted); font-size: 0.9rem; }
+
+    @media (max-width: 900px) { .kpi-row, .quick-actions { grid-template-columns: repeat(2, 1fr); } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="dash">
+    <div class="dash-top">
+        <div>
+            <h1>Bonjour, {{ user.username }} 👋</h1>
+            <p>Voici un aperçu de votre espace santé</p>
+        </div>
+        <a href="{{ url_for('main.consulter') }}" class="btn btn-primary">🩺 Nouvelle consultation</a>
+    </div>
+
+    <div class="kpi-row">
+        <div class="kpi"><div class="kpi-val">{{ total_consultations }}</div><div class="kpi-lbl">Consultations totales</div></div>
+        <div class="kpi"><div class="kpi-val">{{ user.monthly_uses }}</div><div class="kpi-lbl">Ce mois-ci</div></div>
+        <div class="kpi"><div class="kpi-val">{% if user.is_premium %}∞{% else %}{{ user.remaining_uses() }}{% endif %}</div><div class="kpi-lbl">Restantes</div></div>
+        <div class="kpi"><div class="kpi-val">{{ 'Pro' if user.is_premium else 'Free' }}</div><div class="kpi-lbl">Votre plan</div></div>
+    </div>
+
+    {% if user.is_premium %}
+    <div class="plan-banner plan-premium">
+        <div>
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.3rem;">
+                <span style="color:#f59e0b; font-size:1.2rem;">⭐</span>
+                <strong style="color:#fcd34d; font-size:1.05rem;">Abonnement Premium actif</strong>
+            </div>
+            <div style="color:var(--muted); font-size:0.88rem;">
+                Consultations illimitées.
+                {% if user.subscription_expires %}Expire le {{ user.subscription_expires.strftime('%d/%m/%Y') }}.{% endif %}
+            </div>
+        </div>
+        <span class="badge-premium" style="font-size:0.85rem; padding:0.4rem 1rem;">ACTIF</span>
+    </div>
+    {% else %}
+    <div class="plan-banner plan-free">
+        <div class="progress-wrap">
+            <div class="progress-label">{{ user.monthly_uses }}/10 consultations ce mois</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:{{ [(user.monthly_uses / 10 * 100)|int, 100]|min }}%;"></div></div>
+            <div class="progress-note">Réinitialisation le 1er du mois prochain</div>
+        </div>
+        <a href="{{ url_for('main.abonnement') }}" class="btn btn-gold">⭐ Premium — {{ subscription_price }} FCFA/mois</a>
+    </div>
+    {% endif %}
+
+    <div class="quick-actions">
+        <a href="{{ url_for('main.consulter') }}" class="action-card">
+            <span class="action-icon">🩺</span>
+            <div class="action-title">Consulter</div>
+            <div class="action-desc">Analyser des symptômes</div>
+        </a>
+        <a href="{{ url_for('main.historique') }}" class="action-card">
+            <span class="action-icon">📋</span>
+            <div class="action-title">Historique</div>
+            <div class="action-desc">Toutes mes consultations</div>
+        </a>
+        <a href="{{ url_for('main.maladies') }}" class="action-card">
+            <span class="action-icon">🏥</span>
+            <div class="action-title">Maladies</div>
+            <div class="action-desc">Encyclopédie médicale</div>
+        </a>
+        <a href="{{ url_for('main.profil') }}" class="action-card">
+            <span class="action-icon">👤</span>
+            <div class="action-title">Mon Profil</div>
+            <div class="action-desc">Paramètres du compte</div>
+        </a>
+    </div>
+
+    <div class="recent-block">
+        <div class="block-header">
+            <h3>🕒 Dernières consultations</h3>
+            <a href="{{ url_for('main.historique') }}">Voir tout →</a>
+        </div>
+        {% if consultations %}
+            {% for c in consultations %}
+            <div class="mini-consult">
+                <div class="mini-symptom">{{ c.symptoms_text }}</div>
+                <div class="mini-date">{{ c.created_at.strftime('%d/%m/%Y') }}</div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="empty-recent">
+            Aucune consultation encore.
+            <a href="{{ url_for('main.consulter') }}" style="color:var(--accent); margin-left:0.4rem;">Commencer →</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
