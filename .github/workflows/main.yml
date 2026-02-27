@@ -1,1 +1,57 @@
+name: Deploy Flask App to EC2
 
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "$EC2_SSH_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
+        env:
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+
+      - name: Copy project to EC2 (SCP)
+        run: |
+          ssh -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST "rm -rf /home/$EC2_USER/groupe9 && mkdir -p /home/$EC2_USER/groupe9"
+          scp -i ~/.ssh/id_rsa -r $(ls -A | grep -v "^\.git$" | tr '\n' ' ') $EC2_USER@$EC2_HOST:/home/$EC2_USER/groupe9/
+        env:
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+
+      - name: Install dependencies and run app on EC2
+        run: |
+          ssh -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST << 'EOF'
+            cd /home/ubuntu/groupe9
+
+            # Créer le venv sur l'EC2 si inexistant
+            python3 -m venv venv
+
+            # Installer les dépendances
+            venv/bin/pip install --upgrade pip
+            venv/bin/pip install -r requirements.txt
+
+            # Arrêter l'ancienne instance de l'app si elle tourne
+            pkill -f "python.*app.py" || true
+            sleep 1
+
+            # Lancer l'application en arrière-plan
+            nohup venv/bin/python app.py > app.log 2>&1 &
+
+            echo "✅ Application démarrée avec succès"
+          EOF
+        env:
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
