@@ -25,8 +25,8 @@ jobs:
 
       - name: Copy project to EC2 (SCP)
         run: |
-          ssh -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST "rm -rf /home/$EC2_USER/medi_sym && mkdir -p /home/$EC2_USER/medi_sym"
-          scp -i ~/.ssh/id_rsa -r $(ls -A | grep -v "^\.git$" | tr '\n' ' ') $EC2_USER@$EC2_HOST:/home/$EC2_USER/medi_sym/
+          ssh -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST "rm -rf /home/$EC2_USER/groupe9 && mkdir -p /home/$EC2_USER/groupe9"
+          scp -i ~/.ssh/id_rsa -r $(ls -A | grep -v "^\.git$" | tr '\n' ' ') $EC2_USER@$EC2_HOST:/home/$EC2_USER/groupe9/
         env:
           EC2_USER: ${{ secrets.EC2_USER }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
@@ -34,7 +34,7 @@ jobs:
       - name: Install dependencies and run app on EC2
         run: |
           ssh -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST << 'EOF'
-            cd /home/ubuntu/medi_sym
+            cd /home/ubuntu/groupe9
 
             # Créer le venv sur l'EC2 si inexistant
             python3 -m venv venv
